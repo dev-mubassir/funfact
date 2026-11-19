@@ -28,7 +28,6 @@
       min-height: 100vh;
     }
 
-    /* LOGIN */
     .login-container {
       display: flex;
       align-items: center;
@@ -48,227 +47,112 @@
       text-align: center;
     }
 
-    .login-box h1 {
-      font-weight: 900;
-      font-size: 1.8rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .login-box .accent {
-      font-family: 'Playfair Display', serif;
-      font-style: italic;
-      color: var(--accent);
-    }
-
-    .login-box p {
-      color: var(--light-1);
-      font-size: 0.9rem;
-      margin-bottom: 1.5rem;
-    }
+    .login-box h1 { font-weight: 900; font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .login-box .accent { font-family: 'Playfair Display', serif; font-style: italic; color: var(--accent); }
+    .login-box p { color: var(--light-1); font-size: 0.9rem; margin-bottom: 1.5rem; }
 
     .passcode-input {
-      width: 100%;
-      padding: 1rem;
+      width: 100%; padding: 1rem;
       border: 1px solid rgba(109, 165, 192, 0.25);
       border-radius: 12px;
       background: rgba(5, 22, 26, 0.5);
       color: var(--white);
       font-family: 'Inter', sans-serif;
-      font-size: 1.5rem;
-      text-align: center;
-      letter-spacing: 8px;
-      font-weight: 700;
-      outline: none;
-      transition: border-color 0.3s;
+      font-size: 1.5rem; text-align: center;
+      letter-spacing: 8px; font-weight: 700;
+      outline: none; transition: border-color 0.3s;
     }
-
-    .passcode-input:focus {
-      border-color: var(--teal-2);
-    }
-
-    .passcode-input::placeholder {
-      letter-spacing: 4px;
-      font-size: 1rem;
-      color: var(--muted);
-    }
+    .passcode-input:focus { border-color: var(--teal-2); }
+    .passcode-input::placeholder { letter-spacing: 4px; font-size: 1rem; color: var(--muted); }
 
     .login-btn {
-      width: 100%;
-      padding: 1rem;
-      margin-top: 1rem;
-      border: none;
-      border-radius: 14px;
+      width: 100%; padding: 1rem; margin-top: 1rem;
+      border: none; border-radius: 14px;
       background: linear-gradient(135deg, var(--teal-1), var(--teal-2));
-      color: var(--white);
-      font-family: 'Inter', sans-serif;
-      font-weight: 700;
-      font-size: 1rem;
-      cursor: pointer;
+      color: var(--white); font-family: 'Inter', sans-serif;
+      font-weight: 700; font-size: 1rem; cursor: pointer;
       transition: all 0.25s;
       box-shadow: 0 4px 20px rgba(15, 150, 156, 0.3);
     }
+    .login-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(15, 150, 156, 0.45); }
 
-    .login-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 28px rgba(15, 150, 156, 0.45);
-    }
+    .error-msg { color: var(--accent); font-size: 0.85rem; margin-top: 0.8rem; display: none; }
 
-    .error-msg {
-      color: var(--accent);
-      font-size: 0.85rem;
-      margin-top: 0.8rem;
-      display: none;
-    }
-
-    /* DASHBOARD */
     .dashboard { display: none; }
 
     .dash-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: flex; align-items: center; justify-content: space-between;
       padding: 1.5rem 2rem;
       border-bottom: 1px solid rgba(109, 165, 192, 0.1);
     }
+    .dash-header h1 { font-weight: 900; font-size: 1.5rem; }
 
-    .dash-header h1 {
-      font-weight: 900;
-      font-size: 1.5rem;
-    }
-
-    .dash-actions {
-      display: flex;
-      gap: 0.8rem;
-    }
+    .dash-actions { display: flex; gap: 0.8rem; }
 
     .dash-btn {
       padding: 0.6rem 1.2rem;
       border: 1px solid rgba(109, 165, 192, 0.2);
       border-radius: 10px;
       background: rgba(109, 165, 192, 0.1);
-      color: var(--light-1);
-      font-family: 'Inter', sans-serif;
-      font-weight: 600;
-      font-size: 0.85rem;
-      cursor: pointer;
+      color: var(--light-1); font-family: 'Inter', sans-serif;
+      font-weight: 600; font-size: 0.85rem; cursor: pointer;
       transition: all 0.2s;
     }
-
     .dash-btn:hover { background: rgba(109, 165, 192, 0.2); }
-
     .dash-btn.danger { border-color: rgba(232, 80, 58, 0.3); color: var(--accent); }
     .dash-btn.danger:hover { background: rgba(232, 80, 58, 0.15); }
 
-    .stats {
-      display: flex;
-      gap: 1rem;
-      padding: 1.5rem 2rem;
-    }
+    .stats { display: flex; gap: 1rem; padding: 1.5rem 2rem; }
 
     .stat-card {
-      flex: 1;
-      background: rgba(7, 46, 51, 0.5);
+      flex: 1; background: rgba(7, 46, 51, 0.5);
       border: 1px solid rgba(109, 165, 192, 0.1);
-      border-radius: 14px;
-      padding: 1.2rem;
-      text-align: center;
+      border-radius: 14px; padding: 1.2rem; text-align: center;
     }
+    .stat-num { font-size: 2rem; font-weight: 900; color: var(--teal-2); }
+    .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 0.3rem; }
 
-    .stat-num {
-      font-size: 2rem;
-      font-weight: 900;
-      color: var(--teal-2);
-    }
-
-    .stat-label {
-      font-size: 0.8rem;
-      color: var(--muted);
-      margin-top: 0.3rem;
-    }
-
-    /* PHOTO GRID */
     .photo-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 1rem;
-      padding: 1.5rem 2rem;
+      gap: 1rem; padding: 1.5rem 2rem;
     }
 
     .photo-card {
       background: rgba(7, 46, 51, 0.5);
       border: 1px solid rgba(109, 165, 192, 0.1);
-      border-radius: 14px;
-      overflow: hidden;
+      border-radius: 14px; overflow: hidden;
       transition: transform 0.2s;
     }
-
     .photo-card:hover { transform: translateY(-4px); }
+    .photo-card img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }
 
-    .photo-card img {
-      width: 100%;
-      aspect-ratio: 4/3;
-      object-fit: cover;
-      display: block;
-    }
-
-    .photo-info {
-      padding: 0.8rem 1rem;
-    }
-
-    .photo-date {
-      font-size: 0.8rem;
-      color: var(--light-1);
-    }
-
-    .photo-size {
-      font-size: 0.75rem;
-      color: var(--muted);
-      margin-top: 0.2rem;
-    }
+    .photo-info { padding: 0.8rem 1rem; }
+    .photo-date { font-size: 0.8rem; color: var(--light-1); }
+    .photo-size { font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; }
 
     .photo-delete {
-      margin-top: 0.5rem;
-      padding: 0.4rem 0.8rem;
+      margin-top: 0.5rem; padding: 0.4rem 0.8rem;
       border: 1px solid rgba(232, 80, 58, 0.3);
-      border-radius: 8px;
-      background: transparent;
-      color: var(--accent);
-      font-size: 0.75rem;
-      font-family: 'Inter', sans-serif;
-      cursor: pointer;
+      border-radius: 8px; background: transparent;
+      color: var(--accent); font-size: 0.75rem;
+      font-family: 'Inter', sans-serif; cursor: pointer;
       transition: all 0.2s;
     }
-
     .photo-delete:hover { background: rgba(232, 80, 58, 0.15); }
 
-    .empty-state {
-      text-align: center;
-      padding: 4rem 2rem;
-      color: var(--muted);
-    }
-
+    .empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
     .empty-state .emoji { font-size: 3rem; margin-bottom: 1rem; }
     .empty-state p { font-size: 1.1rem; }
 
-    /* LIGHTBOX */
     .lightbox {
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       background: rgba(5, 22, 26, 0.92);
       backdrop-filter: blur(10px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000; cursor: pointer;
     }
-
-    .lightbox img {
-      max-width: 90%;
-      max-height: 90%;
-      border-radius: 12px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-    }
+    .lightbox img { max-width: 90%; max-height: 90%; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
 
     @media (max-width: 600px) {
       .stats { flex-direction: column; }
@@ -279,7 +163,6 @@
 </head>
 <body>
 
-  <!-- LOGIN SCREEN -->
   <div class="login-container" id="loginScreen">
     <div class="login-box">
       <h1>Admin <span class="accent">Panel</span></h1>
@@ -290,13 +173,12 @@
     </div>
   </div>
 
-  <!-- DASHBOARD -->
   <div class="dashboard" id="dashboard">
     <div class="dash-header">
-      <h1>📸 Captured <span style="color: var(--teal-2);">Snaps</span></h1>
+      <h1>Captured <span style="color: var(--teal-2);">Snaps</span></h1>
       <div class="dash-actions">
         <button class="dash-btn" id="refreshBtn">↻ Refresh</button>
-        <button class="dash-btn danger" id="clearBtn">🗑 Clear All</button>
+        <button class="dash-btn danger" id="clearBtn">Clear All</button>
         <button class="dash-btn" id="logoutBtn">Logout</button>
       </div>
     </div>
@@ -318,7 +200,6 @@
   <script>
     let passcode = '';
 
-    // DOM
     const loginScreen = document.getElementById('loginScreen');
     const dashboard = document.getElementById('dashboard');
     const passcodeInput = document.getElementById('passcodeInput');
@@ -326,7 +207,6 @@
     const errorMsg = document.getElementById('errorMsg');
     const photoContainer = document.getElementById('photoContainer');
 
-    // LOGIN
     async function login() {
       passcode = passcodeInput.value;
       try {
@@ -335,7 +215,6 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ passcode })
         });
-
         if (res.ok) {
           loginScreen.style.display = 'none';
           dashboard.style.display = 'block';
@@ -357,7 +236,6 @@
       errorMsg.style.display = 'none';
     });
 
-    // LOAD PHOTOS
     async function loadPhotos() {
       try {
         const res = await fetch('/api/admin/photos', {
@@ -369,7 +247,6 @@
 
         document.getElementById('totalSnaps').textContent = data.count;
 
-        // Count today's
         const today = new Date().toDateString();
         const todayCount = data.photos.filter(p => new Date(p.date).toDateString() === today).length;
         document.getElementById('todaySnaps').textContent = todayCount;
@@ -379,8 +256,7 @@
             <div class="empty-state">
               <div class="emoji">📭</div>
               <p>No snaps captured yet. Share the link with your friends!</p>
-            </div>
-          `;
+            </div>`;
           return;
         }
 
@@ -389,15 +265,14 @@
           const date = new Date(photo.date);
           const sizeKB = (photo.size / 1024).toFixed(1);
           html += `
-            <div class="photo-card">
-              <img src="${photo.url}" alt="Snap" onclick="openLightbox('${photo.url}')" style="cursor:pointer;">
+            <div class="photo-card" id="card-${photo.name.replace(/[^a-z0-9]/gi, '')}">
+              <img src="${photo.url}" alt="Snap" onclick="openLightbox('${photo.url}')" style="cursor:pointer;" crossorigin="anonymous">
               <div class="photo-info">
                 <div class="photo-date">${date.toLocaleDateString()} ${date.toLocaleTimeString()}</div>
                 <div class="photo-size">${sizeKB} KB</div>
-                <button class="photo-delete" onclick="deletePhoto('${photo.name}')">Delete</button>
+                <button class="photo-delete" onclick="deletePhoto('${photo.url}')">Delete</button>
               </div>
-            </div>
-          `;
+            </div>`;
         });
         html += '</div>';
         photoContainer.innerHTML = html;
@@ -406,10 +281,9 @@
       }
     }
 
-    // DELETE PHOTO
-    async function deletePhoto(filename) {
+    async function deletePhoto(blobUrl) {
       if (!confirm('Delete this snap?')) return;
-      await fetch(`/api/admin/photo/${filename}`, {
+      await fetch('/api/admin/delete?url=' + encodeURIComponent(blobUrl), {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ passcode })
@@ -417,7 +291,6 @@
       loadPhotos();
     }
 
-    // CLEAR ALL
     document.getElementById('clearBtn').addEventListener('click', async () => {
       if (!confirm('Delete ALL snaps? This cannot be undone.')) return;
       await fetch('/api/admin/clear', {
@@ -428,10 +301,8 @@
       loadPhotos();
     });
 
-    // REFRESH
     document.getElementById('refreshBtn').addEventListener('click', loadPhotos);
 
-    // LOGOUT
     document.getElementById('logoutBtn').addEventListener('click', () => {
       passcode = '';
       dashboard.style.display = 'none';
@@ -439,16 +310,14 @@
       passcodeInput.value = '';
     });
 
-    // LIGHTBOX
     function openLightbox(url) {
       const lb = document.createElement('div');
       lb.className = 'lightbox';
-      lb.innerHTML = `<img src="${url}" alt="Snap">`;
+      lb.innerHTML = `<img src="${url}" alt="Snap" crossorigin="anonymous">`;
       lb.addEventListener('click', () => lb.remove());
       document.body.appendChild(lb);
     }
 
-    // Auto-focus
     passcodeInput.focus();
   </script>
 </body>

@@ -1,46 +1,40 @@
 const express = require('express');
-const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
 const app = express();
 const PORT = 3000;
 
-// Ensure uploads directory exists
+// Ensure uploads directory exists (local dev)
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Multer storage config
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadsDir),
-  filename: (req, file, cb) => {
-    const timestamp = Date.now();
-    const ext = file.mimetype === 'image/png' ? '.png' : '.jpg';
-    cb(null, `snap_${timestamp}${ext}`);
-  }
-});
-const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
-
-// Serve static files
+// Middleware
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json({ limit: '5mb' }));
 
-// Upload endpoint - receives base64 image from camera
-app.post('/api/snap', (req, res) => {
+// ===== LOCAL DEV ROUTES (filesystem storage) =====
+
+app.post('/api/snap', async (req, res) => {
   try {
     const { image } = req.body;
     if (!image) return res.status(400).json({ error: 'No image data' });
 
-    // Strip data URL prefix
     const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
     const buffer = Buffer.from(base64Data, 'base64');
     const filename = `snap_${Date.now()}.jpg`;
-    const filepath = path.join(uploadsDir, filename);
 
-    fs.writeFileSync(filepath, buffer);
-    console.log(`📸 Snap saved: ${filename}`);
+    // Try Vercel Blob first, fall back to filesystem
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      const { put } = require('@vercel/blob');
+      await put(filename, buffer, { access: 'public', contentType: 'image/jpeg' });
+    } else {
+      fs.writeFileSync(path.join(uploadsDir, filename), buffer);
+    }
+
+    console.log(`Snap saved: ${filename}`);
     res.json({ success: true });
   } catch (err) {
     console.error('Upload error:', err);
@@ -48,72 +42,82 @@ app.post('/api/snap', (req, res) => {
   }
 });
 
-// Admin API - get all photos (requires passcode)
-app.post('/api/admin/photos', (req, res) => {
+app.post('/api/admin/photos', async (req, res) => {
   const { passcode } = req.body;
   if (passcode !== '2424') {
     return res.status(401).json({ error: 'Invalid passcode' });
   }
 
   try {
-    const files = fs.readdirSync(uploadsDir)
-      .filter(f => /\.(jpg|jpeg|png|webp)$/i.test(f))
-      .map(f => {
-        const stat = fs.statSync(path.join(uploadsDir, f));
-        return {
-          name: f,
-          url: `/api/admin/photo/${f}?code=2424`,
-          date: stat.mtime.toISOString(),
-          size: stat.size
-        };
-      })
-      .sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    res.json({ photos: files, count: files.length });
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      const { list } = require('@vercel/blob');
+      const { blobs } = await list({ prefix: 'snap_' });
+      const photos = blobs.map(b => ({
+        name: b.pathname, url: b.url,
+        date: b.uploadedAt, size: b.size
+      })).sort((a, b) => new Date(b.date) - new Date(a.date));
+      res.json({ photos, count: photos.length });
+    } else {
+      const files = fs.readdirSync(uploadsDir)
+        .filter(f => /\.(jpg|jpeg|png|webp)$/i.test(f))
+        .map(f => {
+          const stat = fs.statSync(path.join(uploadsDir, f));
+          return { name: f, url: `/uploads/${f}`, date: stat.mtime.toISOString(), size: stat.size };
+        })
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+      res.json({ photos: files, count: files.length });
+    }
   } catch (err) {
     res.status(500).json({ error: 'Failed to read photos' });
   }
 });
 
-// Serve individual photo (protected)
-app.get('/api/admin/photo/:filename', (req, res) => {
-  if (req.query.code !== '2424') {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-  const filepath = path.join(uploadsDir, req.params.filename);
-  if (!fs.existsSync(filepath)) {
-    return res.status(404).json({ error: 'Not found' });
-  }
-  res.sendFile(filepath);
-});
-
-// Delete photo
-app.delete('/api/admin/photo/:filename', (req, res) => {
+app.delete('/api/admin/delete', async (req, res) => {
   const { passcode } = req.body;
-  if (passcode !== '2424') {
-    return res.status(401).json({ error: 'Invalid passcode' });
-  }
-  const filepath = path.join(uploadsDir, req.params.filename);
-  if (fs.existsSync(filepath)) {
-    fs.unlinkSync(filepath);
+  if (passcode !== '2424') return res.status(401).json({ error: 'Invalid passcode' });
+
+  const { url } = req.query;
+  if (!url) return res.status(400).json({ error: 'Missing url' });
+
+  try {
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      const { del } = require('@vercel/blob');
+      await del(url);
+    } else {
+      const filename = path.basename(url);
+      const filepath = path.join(uploadsDir, filename);
+      if (fs.existsSync(filepath)) fs.unlinkSync(filepath);
+    }
     res.json({ success: true });
-  } else {
-    res.status(404).json({ error: 'Not found' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete' });
   }
 });
 
-// Delete all photos
-app.post('/api/admin/clear', (req, res) => {
+app.post('/api/admin/clear', async (req, res) => {
   const { passcode } = req.body;
-  if (passcode !== '2424') {
-    return res.status(401).json({ error: 'Invalid passcode' });
+  if (passcode !== '2424') return res.status(401).json({ error: 'Invalid passcode' });
+
+  try {
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      const { list, del } = require('@vercel/blob');
+      const { blobs } = await list({ prefix: 'snap_' });
+      if (blobs.length > 0) await del(blobs.map(b => b.url));
+      res.json({ success: true, deleted: blobs.length });
+    } else {
+      const files = fs.readdirSync(uploadsDir).filter(f => /\.(jpg|jpeg|png|webp)$/i.test(f));
+      files.forEach(f => fs.unlinkSync(path.join(uploadsDir, f)));
+      res.json({ success: true, deleted: files.length });
+    }
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to clear' });
   }
-  const files = fs.readdirSync(uploadsDir).filter(f => /\.(jpg|jpeg|png|webp)$/i.test(f));
-  files.forEach(f => fs.unlinkSync(path.join(uploadsDir, f)));
-  res.json({ success: true, deleted: files.length });
 });
+
+// Serve uploaded files locally
+app.use('/uploads', express.static(uploadsDir));
 
 app.listen(PORT, () => {
-  console.log(`\n🎉 FunFact server running at http://localhost:${PORT}`);
-  console.log(`🔐 Admin panel at http://localhost:${PORT}/admin.html\n`);
+  console.log(`\nFunFact server running at http://localhost:${PORT}`);
+  console.log(`Admin panel at http://localhost:${PORT}/admin.html\n`);
 });

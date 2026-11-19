@@ -183,7 +183,7 @@ function showCameraModal() {
   overlay.className = 'modal-overlay';
   overlay.innerHTML = `
     <div class="modal">
-      <h2>📸 Enable AR Facts</h2>
+      <h2>Enable AR Facts</h2>
       <p>Allow camera access to unlock <strong>Augmented Reality Fun Facts</strong> — see facts come alive in your world!</p>
       <button class="btn btn-primary" id="allowCam">
         <span>Enable AR Mode</span>

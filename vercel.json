@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/api/snap", "destination": "/api/snap" },
+    { "source": "/api/admin/photos", "destination": "/api/admin/photos" },
+    { "source": "/api/admin/clear", "destination": "/api/admin/clear" },
+    { "source": "/api/admin/delete", "destination": "/api/admin/delete" }
+  ]
+}
