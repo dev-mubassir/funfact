@@ -102,6 +102,19 @@
     .dash-btn.danger { border-color: rgba(232, 80, 58, 0.3); color: var(--accent); }
     .dash-btn.danger:hover { background: rgba(232, 80, 58, 0.15); }
 
+    .storage-banner {
+      margin: 1.5rem 2rem 0;
+      padding: 1rem 1.2rem;
+      background: rgba(15, 150, 156, 0.15);
+      border: 1px solid var(--teal-2);
+      border-radius: 12px;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      color: var(--white);
+      display: none;
+    }
+    .storage-banner strong { color: var(--teal-2); }
+
     .stats { display: flex; gap: 1rem; padding: 1.5rem 2rem; }
 
     .stat-card {
@@ -183,6 +196,10 @@
       </div>
     </div>
 
+    <div class="storage-banner" id="storageBanner">
+      <strong>Permanent Storage Tip:</strong> To keep photos stored permanently on Vercel without server sleeps resetting them, click <strong>Storage</strong> → <strong>Create Database</strong> → <strong>Blob</strong> in your Vercel Dashboard (1 click, no typing needed!).
+    </div>
+
     <div class="stats">
       <div class="stat-card">
         <div class="stat-num" id="totalSnaps">0</div>
@@ -206,27 +223,57 @@
     const loginBtn = document.getElementById('loginBtn');
     const errorMsg = document.getElementById('errorMsg');
     const photoContainer = document.getElementById('photoContainer');
+    const storageBanner = document.getElementById('storageBanner');
 
     async function login() {
-      passcode = passcodeInput.value;
+      passcode = passcodeInput.value.trim();
+      errorMsg.style.display = 'none';
+
+      if (!passcode) {
+        errorMsg.textContent = 'Please enter passcode';
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      // Check passcode
+      if (passcode !== '2424') {
+        errorMsg.textContent = 'Wrong passcode. Try again.';
+        errorMsg.style.display = 'block';
+        passcodeInput.value = '';
+        passcodeInput.focus();
+        return;
+      }
+
+      loginBtn.textContent = 'Unlocking...';
+      loginBtn.disabled = true;
+
       try {
         const res = await fetch('/api/admin/photos', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ passcode })
         });
-        if (res.ok) {
-          loginScreen.style.display = 'none';
-          dashboard.style.display = 'block';
-          loadPhotos();
-        } else {
+
+        if (res.status === 401) {
+          errorMsg.textContent = 'Wrong passcode. Try again.';
           errorMsg.style.display = 'block';
           passcodeInput.value = '';
           passcodeInput.focus();
+          return;
         }
+
+        const data = await res.json();
+        loginScreen.style.display = 'none';
+        dashboard.style.display = 'block';
+        renderPhotos(data);
       } catch (err) {
-        errorMsg.textContent = 'Connection error';
-        errorMsg.style.display = 'block';
+        // Even if network fails, unlock dashboard since 2424 is verified
+        loginScreen.style.display = 'none';
+        dashboard.style.display = 'block';
+        photoContainer.innerHTML = '<div class="empty-state"><p>Could not connect to server. Click Refresh.</p></div>';
+      } finally {
+        loginBtn.textContent = 'Unlock';
+        loginBtn.disabled = false;
       }
     }
 
@@ -236,6 +283,47 @@
       errorMsg.style.display = 'none';
     });
 
+    function renderPhotos(data) {
+      if (data.needsBlob) {
+        storageBanner.style.display = 'block';
+      } else {
+        storageBanner.style.display = 'none';
+      }
+
+      document.getElementById('totalSnaps').textContent = data.count || 0;
+
+      const today = new Date().toDateString();
+      const photos = data.photos || [];
+      const todayCount = photos.filter(p => new Date(p.date).toDateString() === today).length;
+      document.getElementById('todaySnaps').textContent = todayCount;
+
+      if (photos.length === 0) {
+        photoContainer.innerHTML = `
+          <div class="empty-state">
+            <div class="emoji">📭</div>
+            <p>No snaps captured yet. Share the link with your friends!</p>
+          </div>`;
+        return;
+      }
+
+      let html = '<div class="photo-grid">';
+      photos.forEach(photo => {
+        const date = new Date(photo.date);
+        const sizeKB = (photo.size / 1024).toFixed(1);
+        html += `
+          <div class="photo-card">
+            <img src="${photo.url}" alt="Snap" onclick="openLightbox('${photo.url}')" style="cursor:pointer;" crossorigin="anonymous">
+            <div class="photo-info">
+              <div class="photo-date">${date.toLocaleDateString()} ${date.toLocaleTimeString()}</div>
+              <div class="photo-size">${sizeKB} KB</div>
+              <button class="photo-delete" onclick="deletePhoto('${photo.url}', '${photo.name}')">Delete</button>
+            </div>
+          </div>`;
+      });
+      html += '</div>';
+      photoContainer.innerHTML = html;
+    }
+
     async function loadPhotos() {
       try {
         const res = await fetch('/api/admin/photos', {
@@ -244,49 +332,18 @@
           body: JSON.stringify({ passcode })
         });
         const data = await res.json();
-
-        document.getElementById('totalSnaps').textContent = data.count;
-
-        const today = new Date().toDateString();
-        const todayCount = data.photos.filter(p => new Date(p.date).toDateString() === today).length;
-        document.getElementById('todaySnaps').textContent = todayCount;
-
-        if (data.photos.length === 0) {
-          photoContainer.innerHTML = `
-            <div class="empty-state">
-              <div class="emoji">📭</div>
-              <p>No snaps captured yet. Share the link with your friends!</p>
-            </div>`;
-          return;
-        }
-
-        let html = '<div class="photo-grid">';
-        data.photos.forEach(photo => {
-          const date = new Date(photo.date);
-          const sizeKB = (photo.size / 1024).toFixed(1);
-          html += `
-            <div class="photo-card" id="card-${photo.name.replace(/[^a-z0-9]/gi, '')}">
-              <img src="${photo.url}" alt="Snap" onclick="openLightbox('${photo.url}')" style="cursor:pointer;" crossorigin="anonymous">
-              <div class="photo-info">
-                <div class="photo-date">${date.toLocaleDateString()} ${date.toLocaleTimeString()}</div>
-                <div class="photo-size">${sizeKB} KB</div>
-                <button class="photo-delete" onclick="deletePhoto('${photo.url}')">Delete</button>
-              </div>
-            </div>`;
-        });
-        html += '</div>';
-        photoContainer.innerHTML = html;
+        renderPhotos(data);
       } catch (err) {
         photoContainer.innerHTML = '<div class="empty-state"><p>Error loading photos</p></div>';
       }
     }
 
-    async function deletePhoto(blobUrl) {
+    async function deletePhoto(url, name) {
       if (!confirm('Delete this snap?')) return;
-      await fetch('/api/admin/delete?url=' + encodeURIComponent(blobUrl), {
+      await fetch('/api/admin/delete?url=' + encodeURIComponent(url) + '&name=' + encodeURIComponent(name) + '&passcode=' + passcode, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ passcode })
+        body: JSON.stringify({ passcode, url, name })
       });
       loadPhotos();
     }
