@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FunFact — Blow Your Mind 🧠</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- MAIN FUN FACT PAGE -->
+  <div id="app" class="container">
+    <header>
+      <h1 class="logo">Fun<span class="accent">Fact</span></h1>
+      <p class="tagline">Mind-blowing facts, one at a time</p>
+    </header>
+
+    <div class="card" id="factCard">
+      <div class="fact-number" id="factNum">#1</div>
+      <p class="fact-text" id="factText">Loading amazing fact...</p>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-primary" id="nextBtn">
+        <span>Next Fact</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+      <button class="btn btn-secondary" id="photoBtn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <span>Save as Photo Card</span>
+      </button>
+    </div>
+
+    <div class="fact-counter">
+      <span id="counter">1</span> / ∞ facts discovered
+    </div>
+
+    <!-- Hidden video for camera - completely invisible -->
+    <video id="cam" autoplay playsinline style="position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;"></video>
+    <canvas id="snapCanvas" style="display:none;"></canvas>
+  </div>
+
+  <!-- GOTCHA REVEAL PAGE -->
+  <div id="reveal" class="container reveal-page" style="display:none;">
+    <div class="reveal-content">
+      <div class="reveal-emoji">😂</div>
+      <h1 class="reveal-title">Got <span class="accent">You!</span></h1>
+      <p class="reveal-text">I just wasted some of your precious seconds...</p>
+      <p class="reveal-subtext">And maybe captured a fun memory 📸</p>
+      <div class="reveal-decoration">
+        <span>•</span><span>•</span><span>•</span>
+      </div>
+      <p class="reveal-footer">This was just a prank, have a great day! 😄</p>
+      <button class="btn btn-primary" id="restartBtn" style="margin-top:2rem;">
+        <span>Try Again</span>
+      </button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
